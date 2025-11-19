@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web2App Builder</title>
+</head>
+<body>
+<h1>Create Android App</h1>
+<form id="appForm" enctype="multipart/form-data">
+    <input type="text" name="app_name" placeholder="App Name" required /><br><br>
+    <input type="url" name="url" placeholder="Website URL" required /><br><br>
+    <input type="file" name="logo" accept="image/png"/><br><br>
+    <input type="file" name="splash" accept="image/png"/><br><br>
+    <button type="submit">Build APK</button>
+</form>
+<div id="status"></div>
+
+<script>
+const form = document.getElementById("appForm");
+const status = document.getElementById("status");
+form.addEventListener("submit", async e=>{
+    e.preventDefault();
+    const formData = new FormData(form);
+    status.innerHTML = "Building APK...";
+    const res = await fetch("/build", { method:"POST", body: formData });
+    const data = await res.json();
+    status.innerHTML = data.status || data.error;
+});
+</script>
+</body>
+</html>
