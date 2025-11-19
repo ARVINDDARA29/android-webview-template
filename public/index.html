@@ -1,0 +1,8 @@
+fetch("/api/build", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    app_name: document.getElementById("app_name").value,
+    url: document.getElementById("url").value
+  })
+});
