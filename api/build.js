@@ -1,40 +1,47 @@
 import axios from "axios";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Only POST allowed" });
+  }
 
   try {
-    const body = await new Promise((resolve, reject) => {
-      let data = "";
-      req.on("data", chunk => data += chunk);
-      req.on("end", () => resolve(JSON.parse(data)));
-      req.on("error", err => reject(err));
-    });
-
-    const { app_name, url } = body;
+    // Read JSON body
+    const { app_name, url } = req.body;
 
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
     const REPO = process.env.REPO;
     const BRANCH = process.env.BRANCH || "main";
 
-    const content = Buffer.from(JSON.stringify({ app_name, url })).toString("base64");
+    const configData = {
+      app_name,
+      url
+    };
 
-    // Fetch existing file SHA
-    const existing = await axios.get(`https://api.github.com/repos/${REPO}/contents/config.json`, {
-      headers: { Authorization: `Bearer ${GITHUB_TOKEN}` },
-    });
+    const content = Buffer.from(
+      JSON.stringify(configData, null, 2)
+    ).toString("base64");
 
-    // Update file
-    await axios.put(`https://api.github.com/repos/${REPO}/contents/config.json`, {
-      message: `Update config`,
-      content,
-      sha: existing.data.sha,
-      branch: BRANCH,
-    }, { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` } });
+    // Get existing config.json so we know SHA
+    const existing = await axios.get(
+      `https://api.github.com/repos/${REPO}/contents/config.json`,
+      { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` } }
+    );
 
-    res.status(200).json({ status: "Build started. Check GitHub Actions." });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Build failed" });
+    await axios.put(
+      `https://api.github.com/repos/${REPO}/contents/config.json`,
+      {
+        message: "Update config.json",
+        content,
+        sha: existing.data.sha,
+        branch: BRANCH
+      },
+      { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` } }
+    );
+
+    return res.status(200).json({ message: "Build started! Check GitHub Actions." });
+  } catch (error) {
+    console.log(error.response?.data || error);
+    return res.status(500).json({ error: "Build failed!" });
   }
 }
