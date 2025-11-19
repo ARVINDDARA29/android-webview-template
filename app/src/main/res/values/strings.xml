@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">__APP_NAME__</string>
-    <string name="start_url">__APP_URL__</string>
+    <!-- This placeholder will be replaced by GH Actions -->
+    <string name="app_name">APP_NAME_PLACEHOLDER</string>
+    <string name="start_url">APP_URL_PLACEHOLDER</string>
 </resources>
