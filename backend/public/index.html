@@ -5,7 +5,7 @@
 </head>
 <body>
 <h1>Create Android App</h1>
-<form id="appForm" enctype="multipart/form-data">
+<form id="appForm">
     <input type="text" name="app_name" placeholder="App Name" required /><br><br>
     <input type="url" name="url" placeholder="Website URL" required /><br><br>
     <input type="file" name="logo" accept="image/png"/><br><br>
@@ -16,14 +16,39 @@
 
 <script>
 const form = document.getElementById("appForm");
-const status = document.getElementById("status");
+const statusDiv = document.getElementById("status"); // Changed name to avoid conflict with window.status
 form.addEventListener("submit", async e=>{
     e.preventDefault();
-    const formData = new FormData(form);
-    status.innerHTML = "Building APK...";
-    const res = await fetch("/build", { method:"POST", body: formData });
-    const data = await res.json();
-    status.innerHTML = data.status || data.error;
+    
+    // Get values from the form inputs
+    const app_name = form.elements.app_name.value;
+    const url = form.elements.url.value;
+
+    statusDiv.innerHTML = "Building APK...";
+    
+    try {
+        // --- START OF REQUIRED CHANGE: Fetch URL and body update ---
+        const res = await fetch("/api/build", {
+            method: "POST",
+            // Convert data to JSON string for Vercel serverless function
+            body: JSON.stringify({ app_name, url }), 
+            // Set headers to indicate we are sending JSON
+            headers: { "Content-Type": "application/json" },
+        });
+        // --- END OF REQUIRED CHANGE ---
+
+        const data = await res.json();
+        
+        if (res.ok) {
+            statusDiv.innerHTML = data.status || "APK Build Request Sent.";
+        } else {
+            statusDiv.innerHTML = `Error: ${data.error || res.statusText}`;
+        }
+
+    } catch (error) {
+        statusDiv.innerHTML = "A network error occurred while trying to build the app.";
+        console.error("Fetch error:", error);
+    }
 });
 </script>
 </body>
