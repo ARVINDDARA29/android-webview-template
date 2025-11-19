@@ -1,8 +1,30 @@
-fetch("/api/build", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    app_name: document.getElementById("app_name").value,
-    url: document.getElementById("url").value
-  })
-});
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web2App Builder</title>
+</head>
+<body>
+    <h1>Generate APK</h1>
+
+    <input id="app_name" placeholder="App Name"><br><br>
+    <input id="url" placeholder="Website URL"><br><br>
+
+    <button onclick="buildApp()">Build App</button>
+
+    <script>
+        async function buildApp() {
+            let app_name = document.getElementById("app_name").value;
+            let url = document.getElementById("url").value;
+
+            let response = await fetch("/api/build", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ app_name, url })
+            });
+
+            let result = await response.json();
+            alert(JSON.stringify(result, null, 2));
+        }
+    </script>
+</body>
+</html>
