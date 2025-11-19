@@ -1,0 +1,51 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main    # jab bhi main branch me push hoga, build start ho jayega
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1) Repo checkout
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2) Java JDK install (Android ke liye required)
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # 3) Android SDK install
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v3
+
+      # 4) Placeholders replace karo (config.json se values pad kar)
+      - name: Read config.json & Replace Fields
+        run: |
+          APP_NAME=$(jq -r '.app_name' config.json)
+          START_URL=$(jq -r '.url' config.json)
+
+          echo "App Name: $APP_NAME"
+          echo "Start URL: $START_URL"
+
+          # strings.xml replace
+          sed -i "s|__APP_NAME__|$APP_NAME|g" app/src/main/res/values/strings.xml
+          sed -i "s|__START_URL__|$START_URL|g" app/src/main/res/values/strings.xml
+
+      # 5) App build (Debug APK)
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      # 6) Artifact upload (APK download link create karega)
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: Web2App-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
