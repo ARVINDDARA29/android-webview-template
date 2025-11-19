@@ -1,24 +1,35 @@
 package com.example.webview;
 
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-
-import androidx.appcompat.app.AppCompatActivity;
+import android.webkit.WebViewClient;
 
 public class MainActivity extends AppCompatActivity {
+
+    private WebView webView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        WebView web = findViewById(R.id.webview);
+        webView = findViewById(R.id.webview);
 
-        WebSettings settings = web.getSettings();
-        settings.setJavaScriptEnabled(true);
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
 
-        String url = getString(R.string.start_url);
-        web.loadUrl(url);
+        webView.setWebViewClient(new WebViewClient());
+        webView.loadUrl("https://google.com");  // Yaha apni Website ka URL daalo
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
     }
 }
